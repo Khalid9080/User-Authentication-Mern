@@ -1,13 +1,83 @@
-import React, { useState } from 'react';
+/* eslint-disable no-unused-vars */
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import DropdownList from '../Components/Page/DropdownList';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-
 const Signup = () => {
   const [selectedShop, setSelectedShop] = useState('');
-   const navigate = useNavigate();
+  const navigate = useNavigate();
+
+  const [shopAvailable, setShopAvailable] = useState(null); // null = unchecked, true = available, false = taken
+  const [checkingShop, setCheckingShop] = useState(false);
+
+  // Password validation regex: at least 8 chars, 1 number, 1 special char
+  const validatePassword = (password) => {
+    return /^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/.test(password);
+  };
+
+  // Check shop availability whenever selectedShop changes
+  useEffect(() => {
+    if (!selectedShop.trim()) {
+      setShopAvailable(null);
+      return;
+    }
+
+    const checkShop = async () => {
+      setCheckingShop(true);
+      try {
+        const res = await axios.get(
+          `http://localhost:5000/api/check-shop?shop=${encodeURIComponent(selectedShop)}`
+        );
+        setShopAvailable(!res.data.exists);
+      } catch (error) {
+        setShopAvailable(false);
+      } finally {
+        setCheckingShop(false);
+      }
+    };
+
+    checkShop();
+  }, [selectedShop]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const username = e.target.username.value.trim();
+    const password = e.target.password.value;
+    const shop = selectedShop.trim();
+
+    if (!username) {
+      return toast.error('User Name is required');
+    }
+
+    if (!validatePassword(password)) {
+      return toast.error(
+        'Password must be at least 8 characters, include at least one number and one special character.'
+      );
+    }
+
+    if (!shop) {
+      return toast.error('Please select a shop');
+    }
+
+    if (shopAvailable === false) {
+      return toast.error('Shop name is already taken. Please choose another.');
+    }
+
+    try {
+      await axios.post('http://localhost:5000/api/signup', {
+        username,
+        password,
+        shop,
+      });
+
+      navigate('/signin', { state: { signupSuccess: true } });
+    } catch (err) {
+      toast.error(err.response?.data || 'Signup failed');
+    }
+  };
 
   return (
     <div className="mx-auto w-full max-w-sm rounded-xl border border-zinc-200 bg-white ring-4 ring-zinc-300/25">
@@ -31,7 +101,7 @@ const Signup = () => {
 
             <h1 className="text-2xl font-extrabold">Create a new account</h1>
             <h2 className="mt-1 text-sm leading-relaxed text-zinc-600">
-              Already have an account?{" "}
+              Already have an account?{' '}
               <Link
                 to="/signin"
                 className="text-zinc-800 underline decoration-slate-300 underline-offset-2 hover:text-zinc-900"
@@ -39,55 +109,17 @@ const Signup = () => {
                 Sign In
               </Link>
             </h2>
-
           </div>
 
-         <form
-            className="mt-5 flex flex-col gap-5"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const username = e.target.username.value;
-              const email = e.target.email.value;
-              const password = e.target.password.value;
-              const confirm = e.target['password-confirmation'].value;
-              const shop = selectedShop;
-
-              if (password !== confirm) return toast.error('Passwords do not match');
-
-              try {
-                await axios.post('http://localhost:5000/api/signup', {
-                  username,
-                  email,
-                  password,
-                  shop,
-                });
-                // Redirect to signin with success flag
-                navigate('/signin', { state: { signupSuccess: true } });
-              } catch (err) {
-                toast.error(err.response?.data || 'Signup failed');
-              }
-            }}
-          >
-
+          <form className="mt-5 flex flex-col gap-5" onSubmit={handleSubmit}>
             <div className="space-y-1">
-              <label htmlFor="name" className="inline-block text-sm font-medium">
+              <label htmlFor="username" className="inline-block text-sm font-medium">
                 User Name
               </label>
               <input
                 id="username"
+                name="username"
                 type="text"
-                required
-                className="block w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm/6 font-medium placeholder-zinc-500 focus:border-zinc-500 focus:ring-3 focus:ring-zinc-500/50 focus:outline-hidden"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label htmlFor="email" className="inline-block text-sm font-medium">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
                 required
                 className="block w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm/6 font-medium placeholder-zinc-500 focus:border-zinc-500 focus:ring-3 focus:ring-zinc-500/50 focus:outline-hidden"
               />
@@ -99,18 +131,7 @@ const Signup = () => {
               </label>
               <input
                 id="password"
-                type="password"
-                required
-                className="block w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm/6 font-medium placeholder-zinc-500 focus:border-zinc-500 focus:ring-3 focus:ring-zinc-500/50 focus:outline-hidden"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label htmlFor="password-confirmation" className="text-sm font-medium">
-                Confirm Password
-              </label>
-              <input
-                id="password-confirmation"
+                name="password"
                 type="password"
                 required
                 className="block w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm/6 font-medium placeholder-zinc-500 focus:border-zinc-500 focus:ring-3 focus:ring-zinc-500/50 focus:outline-hidden"
@@ -119,10 +140,18 @@ const Signup = () => {
 
             <DropdownList setSelectedShop={setSelectedShop} />
 
+            {checkingShop && <p className="text-sm text-yellow-600">Checking shop availability...</p>}
+            {shopAvailable === false && !checkingShop && (
+              <p className="text-sm text-red-600">Shop name is already taken.</p>
+            )}
+            {shopAvailable === true && !checkingShop && (
+              <p className="text-sm text-green-600">Shop name is available.</p>
+            )}
 
             <button
               type="submit"
               className="flex w-full items-center justify-center gap-2 rounded-lg border border-zinc-800 bg-zinc-800 px-4 py-3 text-sm leading-5 font-medium text-white hover:border-zinc-900 hover:bg-zinc-900 hover:text-white focus:ring-2 focus:ring-zinc-500/50 focus:outline-hidden active:border-zinc-700 active:bg-zinc-700"
+              disabled={checkingShop || shopAvailable === false}
             >
               Register
             </button>
