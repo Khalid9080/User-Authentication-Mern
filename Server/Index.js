@@ -5,8 +5,37 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:5173', // your frontend URL
+    credentials: true,
+}));
+
 app.use(express.json());
+
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
+function verifyToken(req, res, next) {
+    const token = req.cookies.token;
+    if (!token) return res.status(401).send('Unauthorized');
+
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if (err) return res.status(401).send('Invalid token');
+        req.user = decoded; // { userId, username, shop, iat, exp }
+        next();
+    });
+}
+
+// Example protected route:
+app.get('/api/dashboard', verifyToken, (req, res) => {
+    res.send({ message: `Welcome ${req.user.username}`, shop: req.user.shop });
+});
+
+
+// Replace with your own secure secret in .env
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.fqi16.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -24,24 +53,70 @@ async function run() {
         const userCollection = client.db("UserAuthDB").collection("users");
 
         // Register without hashing password (not secure!)
-        // Signup route
+        // Signup route ----
+        // app.post('/api/signup', async (req, res) => {
+        //     const { username, password, shop } = req.body;
+        //     // Check if username already exists
+        //     const userExists = await userCollection.findOne({ username });
+        //     if (userExists) return res.status(409).send('User already exists');
+
+        //     await userCollection.insertOne({ username, password, shop }); // store password as plain text (consider hashing)
+        //     res.send({ success: true });
+        // });
+
         app.post('/api/signup', async (req, res) => {
             const { username, password, shop } = req.body;
-            // Check if username already exists
+
             const userExists = await userCollection.findOne({ username });
             if (userExists) return res.status(409).send('User already exists');
 
-            await userCollection.insertOne({ username, password, shop }); // store password as plain text (consider hashing)
+            // Hash password before storing
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            await userCollection.insertOne({ username, password: hashedPassword, shop });
             res.send({ success: true });
         });
 
 
-        // Login without password hashing
+
+
+
+        // Login without password hashing ---
+        // app.post('/api/signin', async (req, res) => {
+
+        //     const { username, password } = req.body;
+        //     const user = await userCollection.findOne({ username });
+        //     if (!user) return res.status(401).send('User not found');
+        //     if (user.password !== password) return res.status(401).send('Incorrect password');
+        //     res.send({ success: true });
+        // });
+
         app.post('/api/signin', async (req, res) => {
-            const { username, password } = req.body;
+            const { username, password, rememberMe } = req.body;
+
             const user = await userCollection.findOne({ username });
             if (!user) return res.status(401).send('User not found');
-            if (user.password !== password) return res.status(401).send('Incorrect password');
+
+            const passwordMatch = await bcrypt.compare(password, user.password);
+            if (!passwordMatch) return res.status(401).send('Incorrect password');
+
+            // Set token expiry based on rememberMe
+            const expiresIn = rememberMe ? '7d' : '30m';
+
+            const token = jwt.sign(
+                { userId: user._id, username: user.username, shop: user.shop },
+                JWT_SECRET,
+                { expiresIn }
+            );
+
+            // Send JWT in HTTP-only cookie for security, with maxAge in ms
+            res.cookie('token', token, {
+                httpOnly: true,
+                maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 30 * 60 * 1000, // 7 days or 30 mins in ms
+                secure: process.env.NODE_ENV === 'production', // use secure cookies in production
+                sameSite: 'lax',
+            });
+
             res.send({ success: true });
         });
 
@@ -53,6 +128,16 @@ async function run() {
             const shopExists = await userCollection.findOne({ shop });
             if (shopExists) return res.send({ exists: true });
             res.send({ exists: false });
+        });
+
+        app.post('/api/logout', (req, res) => {
+            res.clearCookie('token', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                domain: '.localhost', 
+            });
+            res.send({ success: true });
         });
 
         app.get('/', (req, res) => {

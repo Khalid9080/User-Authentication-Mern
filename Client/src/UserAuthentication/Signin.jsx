@@ -6,26 +6,25 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 const Signin = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
-  const toastShown = useRef(false);  // to show signupSuccess toast once
-
-  // New states for field-level error messages
+  const [rememberMe, setRememberMe] = useState(false);
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [generalError, setGeneralError] = useState('');
 
+  // const [toastShown, setToastShown] = useState(false);
+
+  const toastShown = useRef(false);  // useRef persists without causing re-renders
+
   useEffect(() => {
     if (location.state?.signupSuccess && !toastShown.current) {
       toast.success('Signup successful! Please sign in.');
-      toastShown.current = true;
+      toastShown.current = true;   // mark toast as shown
       navigate(location.pathname, { replace: true, state: null });
     }
   }, [location.state, navigate, location.pathname]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Clear previous errors on submit
     setUsernameError('');
     setPasswordError('');
     setGeneralError('');
@@ -34,13 +33,16 @@ const Signin = () => {
     const password = e.target.password.value;
 
     try {
-      await axios.post('http://localhost:5000/api/signin', { username, password });
+      await axios.post(
+        'http://localhost:5000/api/signin',
+        { username, password, rememberMe },
+        { withCredentials: true }  // Important: send cookies
+      );
       toast.success('Login successful! Redirecting...');
       navigate('/dashboard');
     } catch (err) {
       const message = err.response?.data || 'Login failed';
 
-      // Show field-specific errors based on message
       if (message.toLowerCase().includes('user not found')) {
         setUsernameError('User not found');
       } else if (message.toLowerCase().includes('incorrect password')) {
@@ -50,6 +52,8 @@ const Signin = () => {
       }
     }
   };
+
+
 
   return (
     <div className="relative mx-auto w-full max-w-sm rounded-xl border border-zinc-200 bg-white ring-4 ring-zinc-300/25">
@@ -74,7 +78,10 @@ const Signin = () => {
             </h2>
           </div>
 
-          <form className="mt-5 flex flex-col gap-5" onSubmit={handleSubmit}>
+          <form
+            className="mt-5 flex flex-col gap-5"
+            onSubmit={handleSubmit}
+          >
             <div className="space-y-2">
               <label htmlFor="username" className="inline-block text-sm font-medium">
                 User Name
@@ -84,15 +91,9 @@ const Signin = () => {
                 name="username"
                 type="text"
                 required
-                className={`block w-full rounded-lg border px-4 py-2.5 text-sm/6 font-medium placeholder-zinc-500 focus:outline-hidden focus:ring-3 ${
-                  usernameError
-                    ? 'border-red-600 focus:ring-red-600'
-                    : 'border-zinc-200 focus:border-zinc-500 focus:ring-zinc-500/50'
-                } bg-white`}
+                className="block w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm/6 font-medium placeholder-zinc-500 focus:border-zinc-500 focus:ring-3 focus:ring-zinc-500/50 focus:outline-hidden"
               />
-              {usernameError && (
-                <p className="text-xs text-red-600 mt-1">{usernameError}</p>
-              )}
+              {usernameError && <p className="text-red-600 text-sm mt-1">{usernameError}</p>}
             </div>
 
             <div className="space-y-2">
@@ -104,19 +105,31 @@ const Signin = () => {
                 name="password"
                 type="password"
                 required
-                className={`block w-full rounded-lg border px-4 py-2.5 text-sm/6 font-medium placeholder-zinc-500 focus:outline-hidden focus:ring-3 ${
-                  passwordError
-                    ? 'border-red-600 focus:ring-red-600'
-                    : 'border-zinc-200 focus:border-zinc-500 focus:ring-zinc-500/50'
-                } bg-white`}
+                className="block w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm/6 font-medium placeholder-zinc-500 focus:border-zinc-500 focus:ring-3 focus:ring-zinc-500/50 focus:outline-hidden"
               />
-              {passwordError && (
-                <p className="text-xs text-red-600 mt-1">{passwordError}</p>
-              )}
+              {passwordError && <p className="text-red-600 text-sm mt-1">{passwordError}</p>}
             </div>
 
+            <div className="flex items-center gap-2">
+              <input
+                id="rememberMe"
+                name="rememberMe"
+                type="checkbox"
+                onChange={() => setRememberMe(!rememberMe)}
+                className="w-4 h-4 rounded border border-zinc-300 bg-white focus:ring-2 focus:ring-zinc-500"
+              />
+              <label htmlFor="rememberMe" className="text-sm font-medium text-zinc-700 select-none">
+                Remember Me
+              </label>
+            </div>
+
+            <p className="text-xs text-zinc-500 mt-0 mb-4">
+              If selected, keep the user logged in for 7 days, otherwise the session expires after 30 minutes.
+            </p>
             {generalError && (
-              <p className="text-xs text-red-600 text-center mb-2">{generalError}</p>
+              <p className="text-red-600 text-center text-sm mb-4">
+                {generalError}
+              </p>
             )}
 
             <button
