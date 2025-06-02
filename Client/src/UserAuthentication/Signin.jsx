@@ -1,6 +1,21 @@
-import React from 'react';
+import axios from 'axios';
+import React, { useEffect } from 'react';
+import toast from 'react-hot-toast';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const Signin = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.signupSuccess) {
+      toast.success('Signup successful! Please sign in.');
+      // Optionally clear state so toast doesn't repeat
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
+
   return (
     <div className="relative mx-auto w-full max-w-sm rounded-xl border border-zinc-200 bg-white ring-4 ring-zinc-300/25">
       <div className="flex grow items-center px-6 py-10 sm:px-10 sm:py-14">
@@ -24,14 +39,30 @@ const Signin = () => {
             </h2>
           </div>
 
-          <form className="mt-5 flex flex-col gap-5">
+        <form
+            className="mt-5 flex flex-col gap-5"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const username = e.target.username.value;
+              const password = e.target.password.value;
+
+              try {
+                await axios.post('http://localhost:5000/api/signin', { username, password });
+                toast.success('Login successful! Redirecting...');
+                navigate('/dashboard');
+              } catch (err) {
+                toast.error(err.response?.data || 'Login failed');
+              }
+            }}
+          >
+
             <div className="space-y-2">
               <label htmlFor="email" className="inline-block text-sm font-medium">
-                Email
+                User Name
               </label>
               <input
-                id="email"
-                type="email"
+                id="username"
+                type="text"
                 required
                 className="block w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm/6 font-medium placeholder-zinc-500 focus:border-zinc-500 focus:ring-3 focus:ring-zinc-500/50 focus:outline-hidden"
               />
@@ -57,14 +88,15 @@ const Signin = () => {
             </button>
 
             <div className="text-center text-xs font-medium text-zinc-500">
-              Don't have an account yet?{' '}
-              <a
-                href="javascript:void(0)"
+              Don't have an account yet?{" "}
+              <Link
+                to="/signup"
                 className="text-zinc-800 underline decoration-slate-300 underline-offset-2 hover:text-zinc-900"
               >
-                Register now
-              </a>
+                Sign Up
+              </Link>
             </div>
+
           </form>
         </div>
       </div>

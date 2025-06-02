@@ -1,45 +1,80 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import DropdownList from '../Components/Page/DropdownList';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+
 
 const Signup = () => {
+  const [selectedShop, setSelectedShop] = useState('');
+   const navigate = useNavigate();
+
   return (
     <div className="mx-auto w-full max-w-sm rounded-xl border border-zinc-200 bg-white ring-4 ring-zinc-300/25">
       <div className="flex grow items-center px-6 py-10 sm:px-10 sm:py-14">
         <div className="grow">
           <div className="text-center">
             <svg
-              viewBox="0 0 78 30"
-              fill="none"
               xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
               className="mb-6 inline-block w-10 text-zinc-400"
             >
               <path
-                d="M18.5147 0C15.4686 0 12.5473 1.21005..."
-                fill="currentColor"
-              ></path>
-              <path
-                d="M39.364 22.3934C38.3353 23.4221..."
-                fill="currentColor"
-              ></path>
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 19.5v-1.125a6.375 6.375 0 0112.75 0V19.5"
+              />
             </svg>
+
             <h1 className="text-2xl font-extrabold">Create a new account</h1>
             <h2 className="mt-1 text-sm leading-relaxed text-zinc-600">
-              Already have an account?{' '}
-              <a
-                href="javascript:void(0)"
+              Already have an account?{" "}
+              <Link
+                to="/signin"
                 className="text-zinc-800 underline decoration-slate-300 underline-offset-2 hover:text-zinc-900"
               >
-                Log in
-              </a>
+                Sign In
+              </Link>
             </h2>
+
           </div>
 
-          <form className="mt-5 flex flex-col gap-5">
+         <form
+            className="mt-5 flex flex-col gap-5"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const username = e.target.username.value;
+              const email = e.target.email.value;
+              const password = e.target.password.value;
+              const confirm = e.target['password-confirmation'].value;
+              const shop = selectedShop;
+
+              if (password !== confirm) return toast.error('Passwords do not match');
+
+              try {
+                await axios.post('http://localhost:5000/api/signup', {
+                  username,
+                  email,
+                  password,
+                  shop,
+                });
+                // Redirect to signin with success flag
+                navigate('/signin', { state: { signupSuccess: true } });
+              } catch (err) {
+                toast.error(err.response?.data || 'Signup failed');
+              }
+            }}
+          >
+
             <div className="space-y-1">
               <label htmlFor="name" className="inline-block text-sm font-medium">
-                Name
+                User Name
               </label>
               <input
-                id="name"
+                id="username"
                 type="text"
                 required
                 className="block w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm/6 font-medium placeholder-zinc-500 focus:border-zinc-500 focus:ring-3 focus:ring-zinc-500/50 focus:outline-hidden"
@@ -81,6 +116,9 @@ const Signup = () => {
                 className="block w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm/6 font-medium placeholder-zinc-500 focus:border-zinc-500 focus:ring-3 focus:ring-zinc-500/50 focus:outline-hidden"
               />
             </div>
+
+            <DropdownList setSelectedShop={setSelectedShop} />
+
 
             <button
               type="submit"
