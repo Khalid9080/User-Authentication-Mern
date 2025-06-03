@@ -7,6 +7,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: 'localhost',
-    port: 5174, // 🔁 পরিবর্তিত পোর্ট
+    port: 5174, // ✅ Must match your subdomain port
+    cors: true,
   },
-})
+});
+

@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import Loading from '../Components/Page/Loading';
 
 const Signin = () => {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ const Signin = () => {
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [generalError, setGeneralError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   // const [toastShown, setToastShown] = useState(false);
 
@@ -18,7 +20,7 @@ const Signin = () => {
   useEffect(() => {
     if (location.state?.signupSuccess && !toastShown.current) {
       toast.success('Signup successful! Please sign in.');
-      toastShown.current = true;   // mark toast as shown
+      toastShown.current = true;
       navigate(location.pathname, { replace: true, state: null });
     }
   }, [location.state, navigate, location.pathname]);
@@ -28,6 +30,7 @@ const Signin = () => {
     setUsernameError('');
     setPasswordError('');
     setGeneralError('');
+    setIsLoading(true);
 
     const username = e.target.username.value.trim();
     const password = e.target.password.value;
@@ -36,11 +39,13 @@ const Signin = () => {
       await axios.post(
         'http://localhost:5000/api/signin',
         { username, password, rememberMe },
-        { withCredentials: true }  // Important: send cookies
+        { withCredentials: true }
       );
       toast.success('Login successful! Redirecting...');
+      setIsLoading(false);
       navigate('/dashboard');
     } catch (err) {
+      setIsLoading(false);
       const message = err.response?.data || 'Login failed';
 
       if (message.toLowerCase().includes('user not found')) {
@@ -52,6 +57,10 @@ const Signin = () => {
       }
     }
   };
+
+  if (isLoading) {
+    return <Loading />;
+  }
 
 
 
@@ -134,10 +143,39 @@ const Signin = () => {
 
             <button
               type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-zinc-800 bg-zinc-800 px-4 py-3 text-sm leading-5 font-medium text-white hover:border-zinc-900 hover:bg-zinc-900 hover:text-white focus:ring-2 focus:ring-zinc-500/50 focus:outline-hidden active:border-zinc-700 active:bg-zinc-700"
+              disabled={isLoading}
+              className={`flex w-full items-center justify-center gap-2 rounded-lg border border-zinc-800 bg-zinc-800 px-4 py-3 text-sm leading-5 font-medium text-white
+    hover:border-zinc-900 hover:bg-zinc-900 hover:text-white
+    focus:ring-2 focus:ring-zinc-500/50 focus:outline-hidden active:border-zinc-700 active:bg-zinc-700
+    ${isLoading ? "cursor-not-allowed" : ""}`}
             >
-              Log in
+              {isLoading ? (
+                <svg
+                  aria-hidden="true"
+                  className="w-5 h-5 animate-spin text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  />
+                </svg>
+              ) : (
+                "Log in"
+              )}
             </button>
+
 
             <div className="text-center text-xs font-medium text-zinc-500">
               Don't have an account yet?{' '}
