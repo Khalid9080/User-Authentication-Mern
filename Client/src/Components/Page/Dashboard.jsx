@@ -32,7 +32,18 @@ const Dashboard = () => {
   return (
     <div>
       <h1>Dashboard</h1>
-      <p>Your shop name: <strong>{shop}</strong></p>
+      <p>
+        Your shop name:{" "}
+        <a
+          href={`http://${shop.toLowerCase().replace(/\s+/g, '')}.localhost:5173`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 underline"
+        >
+          {shop}
+        </a>
+        
+      </p>
       <Logout />
     </div>
   );

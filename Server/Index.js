@@ -1,20 +1,28 @@
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 
+// app.use(cors({
+//     origin: 'http://localhost:5173', // your frontend URL
+//     credentials: true,
+// }));
+
+
+
 app.use(cors({
-    origin: 'http://localhost:5173', // your frontend URL
-    credentials: true,
+  origin: [ 'https://musical-banoffee-8ca891.netlify.app','http://localhost:5173', 'http://freshmart.localhost:5173', 'http://techhub.localhost:5173', 'http://urbanwear.localhost:5173', 'http://booknest.localhost:5173', 'http://greenroots.localhost:5173', 'http://sweetbite.localhost:5173'],
+  credentials: true, // very important for cookies to work across domains
 }));
+
 
 app.use(express.json());
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
 function verifyToken(req, res, next) {
@@ -49,7 +57,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
-        await client.connect();
+        // await client.connect();
         const userCollection = client.db("UserAuthDB").collection("users");
 
         // Register without hashing password (not secure!)
@@ -110,15 +118,26 @@ async function run() {
             );
 
             // Send JWT in HTTP-only cookie for security, with maxAge in ms
+            //     res.cookie('token', token, {
+            //         httpOnly: true,
+            //         maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 30 * 60 * 1000, // 7 days or 30 mins in ms
+            //         secure: process.env.NODE_ENV === 'production', // use secure cookies in production
+            //         sameSite: 'lax',
+            //     });
+
+            //     res.send({ success: true });
             res.cookie('token', token, {
                 httpOnly: true,
-                maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 30 * 60 * 1000, // 7 days or 30 mins in ms
-                secure: process.env.NODE_ENV === 'production', // use secure cookies in production
-                sameSite: 'lax',
+                maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 30 * 60 * 1000,
+                secure: false, // set to true in production (HTTPS)
+                sameSite: 'lax', // change to 'none' + secure: true for HTTPS
+                domain: '.localhost', // ⬅️ key for cross-subdomain cookie sharing
             });
-
-            res.send({ success: true });
+               res.send({ success: true });
         });
+
+
+
 
         // Check if shop name exists
         app.get('/api/check-shop', async (req, res) => {
@@ -135,7 +154,7 @@ async function run() {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax',
-                domain: '.localhost', 
+                domain: '.localhost',
             });
             res.send({ success: true });
         });

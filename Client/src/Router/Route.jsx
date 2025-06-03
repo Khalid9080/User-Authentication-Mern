@@ -4,7 +4,7 @@ import Home from "../Components/Page/Home";
 import Signup from "../UserAuthentication/Signup";
 import Signin from "../UserAuthentication/Signin";
 import Dashboard from "../Components/Page/Dashboard";
-// import ShopDetails from "../Components/Page/ShopDetails";
+
 
 
 
@@ -32,9 +32,5 @@ export const router = createBrowserRouter([
      
     ]
   },
-  // {
-  //   // Route to catch root path on subdomain
-  //   path: "/",
-  //   element: <ShopDetails />, // no layout wrapper, direct render ShopDetails
-  // },
+
 ]);
