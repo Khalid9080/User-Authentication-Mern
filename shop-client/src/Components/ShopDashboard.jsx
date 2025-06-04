@@ -10,7 +10,7 @@ const SubdomainDashboard = () => {
   useEffect(() => {
     const fetchShop = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/dashboard', {
+        const res = await axios.get(`${import.meta.env.VITE_REACT_BASE_URL}/api/dashboard`, {
           withCredentials: true,
         });
         setShop(res.data.shop);
