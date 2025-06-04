@@ -1,8 +1,7 @@
 {
   "devDependencies": {
-    "nodemon": "^3.1.10",
-    "main":"Index.json",
-    "start":"node Server"
+    "nodemon": "^3.1.10"
+    
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
