@@ -52,8 +52,10 @@ const Signin = () => {
         setUsernameError('User not found');
       } else if (message.toLowerCase().includes('incorrect password')) {
         setPasswordError('Incorrect password');
+        console.log("API Base URL:", import.meta.env.VITE_REACT_BASE_URL);
       } else {
         setGeneralError(message);
+
       }
     }
   };

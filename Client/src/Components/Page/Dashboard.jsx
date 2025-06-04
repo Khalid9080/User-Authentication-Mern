@@ -19,15 +19,16 @@ const Dashboard = () => {
         });
         setShop(res.data.shop);
         setUsername(res.data.username);
-        setLoading(false);
       } catch (err) {
-        setError(true);  // Set error to true instead of message
-        setLoading(false);
+        setError(true); // this must be set
+      } finally {
+        setLoading(false); // this must always run
       }
     };
 
     fetchDashboard();
   }, []);
+
 
   if (loading) return <Loading />;
   if (error) return <Error404 />;  // Show the 404 page component here

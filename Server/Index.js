@@ -132,7 +132,7 @@ async function run() {
         maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 30 * 60 * 1000,
         secure: false, // set to true in production (HTTPS)
         sameSite: 'lax', // change to 'none' + secure: true for HTTPS
-        domain: '.localhost', // ⬅️ key for cross-subdomain cookie sharing
+        domain: 'onrender.com', // ⬅️ key for cross-subdomain cookie sharing
       });
       res.send({ success: true });
     });
