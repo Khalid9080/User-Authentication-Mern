@@ -25,7 +25,7 @@ const Signin = () => {
     }
   }, [location.state, navigate, location.pathname]);
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
     e.preventDefault();
     setUsernameError('');
     setPasswordError('');
@@ -35,12 +35,17 @@ const Signin = () => {
     const username = e.target.username.value.trim();
     const password = e.target.password.value;
 
+    // ✅ REMOVE trailing slash from .env value
+    const BASE_URL = import.meta.env.VITE_REACT_BASE_URL?.replace(/\/+$/, '');
+    console.log("Sanitized API Base URL:", BASE_URL); // Debug check
+
     try {
       await axios.post(
-        `${import.meta.env.VITE_REACT_BASE_URL}/api/signin`,
+        `${BASE_URL}/api/signin`,
         { username, password, rememberMe },
         { withCredentials: true }
       );
+
       toast.success('Login successful! Redirecting...');
       setIsLoading(false);
       navigate('/dashboard');
@@ -52,10 +57,8 @@ const Signin = () => {
         setUsernameError('User not found');
       } else if (message.toLowerCase().includes('incorrect password')) {
         setPasswordError('Incorrect password');
-        console.log("API Base URL:", import.meta.env.VITE_REACT_BASE_URL);
       } else {
         setGeneralError(message);
-
       }
     }
   };
