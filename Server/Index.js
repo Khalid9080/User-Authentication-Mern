@@ -14,7 +14,7 @@ const port = process.env.PORT || 5000;
 
 // 'https://musical-banoffee-8ca891.netlify.app',
 app.use(cors({
-  origin: [ 'http://localhost:5173', 'http://freshmart.localhost:5173', 'http://techhub.localhost:5173', 'http://urbanwear.localhost:5173', 'http://booknest.localhost:5173', 'http://greenroots.localhost:5173', 'http://sweetbite.localhost:5173'],
+  origin: [ 'https://user-authentication-mern-client.onrender.com','http://localhost:5173', 'http://freshmart.localhost:5173', 'http://techhub.localhost:5173', 'http://urbanwear.localhost:5173', 'http://booknest.localhost:5173', 'http://greenroots.localhost:5173', 'http://sweetbite.localhost:5173'],
   credentials: true, // very important for cookies to work across domains
 }));
 
