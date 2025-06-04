@@ -9,6 +9,10 @@ User Authentication is a full-stack MERN (MongoDB, Express.js, React.js, Node.js
 
 ---
 
+## ⚙️ Local Setup Guide
+
+To properly test subdomain-based authentication and routing, we recommend running the project **locally**.
+
 ## Features 🚀
 
 * 🔐 **Secure Signup & Login** using JWT and HTTP-only cookies
