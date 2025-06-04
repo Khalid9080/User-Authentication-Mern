@@ -69,7 +69,8 @@ const Dashboard = () => {
           Shop Name:{' '}
           {shop ? (
             <a
-              href={`http://${shop.toLowerCase().replace(/\s+/g, '')}.localhost:5173`}
+              // href={`http://${shop.toLowerCase().replace(/\s+/g, '')}.localhost:5173`}
+              href={`/shop/${shop.toLowerCase()}`}
               target="_blank"
               rel="noopener noreferrer"
               className="bg-gradient-to-r from-purple-600 via-pink-500 to-red-500 bg-clip-text text-transparent font-bold"

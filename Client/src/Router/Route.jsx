@@ -5,7 +5,7 @@ import Signup from "../UserAuthentication/Signup";
 import Signin from "../UserAuthentication/Signin";
 import Dashboard from "../Components/Page/Dashboard";
 
-// import ShopDashboard from "../Components/Page/ShopDashboard";
+import ShopDashboard from "../Components/Page/ShopDashboard";
 
 
 
@@ -31,10 +31,10 @@ export const router = createBrowserRouter([
         path: "/dashboard",
         element: <Dashboard />
       },
-      // {
-      //   path: "/shop/:shopName",  // Dynamic shop URL
-      //   element: <ShopDashboard />,  // This is your shop dashboard page
-      // },
+      {
+        path: "/shop/:shopName",  // Dynamic shop URL
+        element: <ShopDashboard />,  // This is your shop dashboard page
+      },
      
     ]
   },
