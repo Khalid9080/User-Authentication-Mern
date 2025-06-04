@@ -35,7 +35,8 @@ const Dashboard = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${import.meta.env.VITE_REACT_BASE_URL}`, {}, { withCredentials: true });
+      await axios.post(`${import.meta.env.VITE_REACT_BASE_URL}/api/logout`, {}, { withCredentials: true });
+
       window.location.href = '/signin';
     } catch {
       alert('Logout failed. Please try again.');

@@ -11,10 +11,10 @@ const port = process.env.PORT || 5000;
 //     credentials: true,
 // }));
 
-
+// , 'http://localhost:5173', 'http://freshmart.localhost:5173', 'http://techhub.localhost:5173', 'http://urbanwear.localhost:5173', 'http://booknest.localhost:5173', 'http://greenroots.localhost:5173', 'http://sweetbite.localhost:5173'
 // 'https://musical-banoffee-8ca891.netlify.app',
 app.use(cors({
-  origin: [ 'https://user-authentication-mern-client.onrender.com','http://localhost:5173', 'http://freshmart.localhost:5173', 'http://techhub.localhost:5173', 'http://urbanwear.localhost:5173', 'http://booknest.localhost:5173', 'http://greenroots.localhost:5173', 'http://sweetbite.localhost:5173'],
+  origin: ['https://user-authentication-mern-client.onrender.com'],
   credentials: true, // very important for cookies to work across domains
 }));
 
@@ -79,10 +79,18 @@ async function run() {
       const userExists = await userCollection.findOne({ username });
       if (userExists) return res.status(409).send('User already exists');
 
-      // Hash password before storing
+      // Normalize shop to lowercase
+      const normalizedShop = shop.toLowerCase().trim();
+
+      // Check if shop already exists
+      const shopExists = await userCollection.findOne({ shop: normalizedShop });
+      if (shopExists) return res.status(409).send('Shop already taken');
+
+      // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      await userCollection.insertOne({ username, password: hashedPassword, shop });
+      // Insert with normalized shop
+      await userCollection.insertOne({ username, password: hashedPassword, shop: normalizedShop });
       res.send({ success: true });
     });
 
@@ -130,9 +138,8 @@ async function run() {
       res.cookie('token', token, {
         httpOnly: true,
         maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 30 * 60 * 1000,
-        secure: false, // set to true in production (HTTPS)
-        sameSite: 'lax', // change to 'none' + secure: true for HTTPS
-        domain: 'onrender.com', // ⬅️ key for cross-subdomain cookie sharing
+        secure: true,                     // must be true for HTTPS
+        sameSite: 'none',                 // required for cross-site cookies
       });
       res.send({ success: true });
     });
