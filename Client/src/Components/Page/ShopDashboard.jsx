@@ -13,7 +13,7 @@ const ShopDashboard = () => {
   useEffect(() => {
     const fetchShop = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/dashboard', {
+        const res = await axios.get(`${import.meta.env.VITE_REACT_BASE_URL}/api/dashboard`, {
           withCredentials: true,  // Ensure cookies are sent for cross-subdomain requests
         });
         setShop(res.data.shop);

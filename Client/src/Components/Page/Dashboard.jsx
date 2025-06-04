@@ -14,7 +14,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/dashboard', {
+        const res = await axios.get(`${import.meta.env.VITE_REACT_BASE_URL}/api/dashboard`, {
           withCredentials: true,
         });
         setShop(res.data.shop);
@@ -34,7 +34,7 @@ const Dashboard = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post('http://localhost:5000/api/logout', {}, { withCredentials: true });
+      await axios.post(`${import.meta.env.VITE_REACT_BASE_URL}`, {}, { withCredentials: true });
       window.location.href = '/signin';
     } catch {
       alert('Logout failed. Please try again.');

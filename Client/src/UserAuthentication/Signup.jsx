@@ -28,7 +28,7 @@ const Signup = () => {
       setCheckingShop(true);
       try {
         const res = await axios.get(
-          `http://localhost:5000/api/check-shop?shop=${encodeURIComponent(selectedShop)}`
+          `${import.meta.env.VITE_REACT_BASE_URL}/api/check-shop?shop=${encodeURIComponent(selectedShop)}`
         );
         setShopAvailable(!res.data.exists);
       } catch (error) {
@@ -67,7 +67,7 @@ const Signup = () => {
     }
 
     try {
-      await axios.post('http://localhost:5000/api/signup', {
+      await axios.post(`${import.meta.env.VITE_REACT_BASE_URL}/api/signup`, {
         username,
         password,
         shop,

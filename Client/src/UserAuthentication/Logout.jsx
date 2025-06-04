@@ -23,7 +23,7 @@ const Logout = () => {
     if (result.isConfirmed) {
       try {
         await axios.post(
-          'http://localhost:5000/api/logout',
+          `${import.meta.env.VITE_REACT_BASE_URL}`,
           {},
           { withCredentials: true }
         );
